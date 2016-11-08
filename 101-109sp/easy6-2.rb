@@ -47,6 +47,30 @@ def halvsies(array)
 	result = [array1, array2]
 end
 
-p
+def find_dup(array)
+	array.sort.each_index do |index|
+		if array[index] == array[index-1]
+			return array[index]
+		end
+	end
+end
+
+def include?(array,value)
+	array.each do |element|
+		if element == value
+			return true
+		end
+	end
+	false
+end
+
+def triangle(n)
+	index = 1
+	while index <= n
+		puts (' '*(n-index) + '*' * index)
+		index += 1
+	end
+end
+
 
 
