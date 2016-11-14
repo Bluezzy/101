@@ -3,7 +3,7 @@ def sum_of_sums(numbers)
 	index = numbers.size
 	while numbers.empty? == false
 		while index != 0
-			arr.push(numbers[index-1])
+			arr.push(numbers[index -1])
 			index -= 1
 		end
 		numbers.pop
@@ -11,10 +11,4 @@ def sum_of_sums(numbers)
 	end
 	arr.reduce(:+)
 end
-
-def hello
-end
-
-
-
 
