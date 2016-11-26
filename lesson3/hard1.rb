@@ -75,10 +75,6 @@ def generate_uuid()
 end
 
 puts generate_uuid()
-
-# Question 5
-
-
     
   
 
