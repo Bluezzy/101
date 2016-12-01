@@ -1,23 +1,40 @@
-def game_analysis(board, mark)
-  winning_lines = { line1: { 1 => board[1], 2 => board[2], 3 => board[3] },
-                    line2: { 4 => board[4], 5 => board[5], 6 => board[6] },
-                    line3: { 7 => board[7], 8 => board[8], 9 => board[9] },
-                    column1: { 1 => board[1], 4 => board[4], 7 => board[7] },
-                    column2: { 2 => board[2], 5 => board[5], 8 => board[8] },
-                    column3: { 3 => board[3], 6 => board[6], 9 => board[9] },
-                    diag1: { 1 => board[1], 5 => board[5], 9 => board[9] },
-                    diag2: { 3 => board[3], 5 => board[5], 7 => board[7] } }
-  winning_lines.each do |_, squares|
-    if squares.values.count(mark) == 3 # full line
-      return 'over' # game is over
+WINNING_LINES = { line1: [1, 2, 3],
+                  line2: [4, 5, 6],
+                  line3: [7, 8, 9],
+                  column1: [1, 4, 7],
+                  column2: [2, 5, 8],
+                  column3: [3, 6, 9],
+                  diag1: [1, 5, 9],
+                  diag2: [3, 5, 7] }.freeze
+
+def full_line?(board, mark) # take 'X' (player) or 'O' (computer) as a second
+  # argument and determines if there is a full line
+  WINNING_LINES.values.each do |line|
+    total_marks = []
+    line.each do |square|
+      total_marks << board[square]
+    end
+    return true if total_marks.count(mark) == 3
+  end
+  false
+end
+
+def empty_squares(board)
+  board.keys.select { |square| board[square] == ' ' }
+end
+
+def smart_choice(board, mark) # makes computer see if there is a threat
+  # for both sides and makes a move accordingly.
+  WINNING_LINES.values.each do |line|
+    board_line = {}
+    line.each do |square|
+      board_line[square] = board[square]
+    end
+    if board_line.values.count(mark) == 2 && board_line.values.count(' ') == 1
+      return board_line.key(' ') # pick the empty square if there is a threat.
     end
   end
-  winning_lines.each do |_, squares|
-    if squares.values.count(mark) == 2 && squares.values.count(' ') == 1
-      return squares.key(' ') # computer understand the threat for both players.
-    end
-  end
-  'nothing found' # game continues
+  false
 end
 
 def joinor(array, delimiter = ',', joining_word = 'or')
@@ -44,60 +61,64 @@ def draw_board(any_board)
   puts "|_________________|"
 end
 
-player_score = 0.0
-computer_score = 0.0
+player_score = 0
+computer_score = 0
 starting_board = {}
 
 loop do
+  starting_board = { 1 => ' ', 2 => ' ', 3 => ' ', 4 => ' ', 5 => ' ',
+                     6 => ' ', 7 => ' ', 8 => ' ', 9 => ' ' }
   answer = ''
-  puts "who should start to play ? (computer/me)"
+  updated_board = starting_board.clone
+  puts "Who should start to play ? ('c' for computer/'m' for me)"
   choose = gets.chomp
-  if choose == 'me'
-    starting_board = { 1 => ' ', 2 => ' ', 3 => ' ', 4 => ' ', 5 => ' ',
-                       6 => ' ', 7 => ' ', 8 => ' ', 9 => ' ' }
-    choices = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-  elsif choose == 'computer'
-    starting_board = { 1 => ' ', 2 => ' ', 3 => ' ', 4 => ' ', 5 => 'O',
-                       6 => ' ', 7 => ' ', 8 => ' ', 9 => ' ' }
-    choices = [1, 2, 3, 4, 6, 7, 8, 9]
-  else
-    puts "Wrong answer. Please type again(computer/me)."
-    redo
+  unless choose == 'm' || choose == 'c'
+    puts "Wrong input. Please type again.(c/m)"
+    choose = gets.chomp
   end
 
-  updated_board = starting_board.clone
-  draw_board(starting_board)
+  system('clear')
+
+  if choose.casecmp == 'c'
+    updated_board[5] = 'O'
+    draw_board(updated_board)
+  end
+
+  draw_board(updated_board)
 
   loop do
-    puts "Which square would you like to mark? #{joinor(choices, ',', 'and')}."
+    puts "Which square would you like to mark?" \
+    " #{joinor(empty_squares(updated_board), ',', 'and')}."
     player_square = gets.chomp.to_i
-    if choices.include?(player_square) == false
+
+    if updated_board[player_square] != ' '
       puts "please try again"
-      redo
+      next
     end
 
+    system('clear')
+
     updated_board[player_square] = 'X'
-    choices.delete(player_square)
-    if game_analysis(updated_board, 'X') == 'over'
+    if full_line?(updated_board, 'X')
       draw_board(updated_board)
       player_score += 1
       puts "You won."
       break
     end
 
-    if game_analysis(updated_board, 'O') == 'nothing found'
-      if game_analysis(updated_board, 'X') == 'nothing found'
-        computer_square = choices.include?(5) ? 5 : choices.sample
+    if smart_choice(updated_board, 'O') == false
+      if smart_choice(updated_board, 'X') == false
+        computer_square = empty_squares(updated_board).include?(5) ?
+        5 : empty_squares(updated_board).sample
       else
-        computer_square = game_analysis(updated_board, 'X') # defensive move
+        computer_square = smart_choice(updated_board, 'X') # defensive move
       end
     else
-      computer_square = game_analysis(updated_board, 'O') # offensive move
+      computer_square = smart_choice(updated_board, 'O') # offensive move
     end
 
     updated_board[computer_square] = 'O'
-    choices.delete(computer_square)
-    if game_analysis(updated_board, 'O') == 'over'
+    if full_line?(updated_board, 'O')
       draw_board(updated_board)
       computer_score += 1
       puts "Computer won."
@@ -105,10 +126,8 @@ loop do
     end
     draw_board(updated_board)
 
-    if choices.empty?
+    if empty_squares(updated_board).size.zero?
       puts "It's a tie"
-      computer_score += 0.5
-      player_score += 0.5
       break
     end
   end
