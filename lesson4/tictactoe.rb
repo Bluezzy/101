@@ -79,7 +79,7 @@ loop do
 
   system('clear')
 
-  if choose.casecmp == 'c'
+  if choose.downcase == 'c'
     updated_board[5] = 'O'
     draw_board(updated_board)
   end
@@ -106,8 +106,8 @@ loop do
       break
     end
 
-    if smart_choice(updated_board, 'O') == false
-      if smart_choice(updated_board, 'X') == false
+    if !smart_choice(updated_board, 'O')
+      if !smart_choice(updated_board, 'X')
         computer_square = empty_squares(updated_board).include?(5) ?
         5 : empty_squares(updated_board).sample
       else
