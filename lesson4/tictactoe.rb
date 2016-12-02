@@ -96,7 +96,7 @@ puts "===================== Welcome to Tic Tac Toe ! =========================="
 
 player_score = 0
 computer_score = 0
-  
+
 loop do
   board = initialize_board
   answer = ''
@@ -134,7 +134,7 @@ loop do
       break
     end
 
-   computer_moves(board)
+    computer_moves(board)
     if full_line?(board, 'O')
       draw_board(board)
       computer_score += 1
