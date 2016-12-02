@@ -7,8 +7,13 @@ WINNING_LINES = { line1: [1, 2, 3],
                   diag1: [1, 5, 9],
                   diag2: [3, 5, 7] }.freeze
 
-def full_line?(board, mark) # take 'X' (player) or 'O' (computer) as a second
-  # argument and determines if there is a full line
+TURN_CHOICES = {  computer: %w(c computer opponent him you O),
+                  player: %w(m me player X myself) }.freeze
+
+GAME_CHOICES = { restart: %w(y yes sure again restart play),
+                 quit: %w(n no quit stop over bye) }.freeze
+
+def full_line?(board, mark)
   WINNING_LINES.values.each do |line|
     total_marks = []
     line.each do |square|
@@ -19,19 +24,31 @@ def full_line?(board, mark) # take 'X' (player) or 'O' (computer) as a second
   false
 end
 
+def prompt(message)
+  puts "==>>> #{message}"
+end
+
 def empty_squares(board)
   board.keys.select { |square| board[square] == ' ' }
 end
 
-def smart_choice(board, mark) # makes computer see if there is a threat
-  # for both sides and makes a move accordingly.
+def winning_choice(brd)
   WINNING_LINES.values.each do |line|
     board_line = {}
-    line.each do |square|
-      board_line[square] = board[square]
+    line.each { |square| board_line[square] = brd[square] }
+    if board_line.values.count('O') == 2 && board_line.values.count(' ') == 1
+      return board_line.key(' ') # pick the winning square
     end
-    if board_line.values.count(mark) == 2 && board_line.values.count(' ') == 1
-      return board_line.key(' ') # pick the empty square if there is a threat.
+  end
+  false
+end
+
+def defensive_choice(brd)
+  WINNING_LINES.values.each do |line|
+    board_line = {}
+    line.each { |square| board_line[square] = brd[square] }
+    if board_line.values.count('X') == 2 && board_line.values.count(' ') == 1
+      return board_line.key(' ') # pick the defensive square
     end
   end
   false
@@ -61,102 +78,105 @@ def draw_board(any_board)
   puts "|_________________|"
 end
 
-player_score = 0
-computer_score = 0
-starting_board = {}
+def initialize_board
+  { 1 => ' ', 2 => ' ', 3 => ' ', 4 => ' ', 5 => ' ',
+    6 => ' ', 7 => ' ', 8 => ' ', 9 => ' ' }
+end
+
+puts "===================== Welcome to Tic Tac Toe ! =========================="
 
 loop do
-  starting_board = { 1 => ' ', 2 => ' ', 3 => ' ', 4 => ' ', 5 => ' ',
-                     6 => ' ', 7 => ' ', 8 => ' ', 9 => ' ' }
+  board = initialize_board
   answer = ''
-  updated_board = starting_board.clone
-  puts "Who should start to play ? ('c' for computer/'m' for me)"
-  choose = gets.chomp
-  unless choose == 'm' || choose == 'c'
-    puts "Wrong input. Please type again.(c/m)"
-    choose = gets.chomp
+  player_score = 0
+  computer_score = 0
+
+  prompt("Who should start to play ? ('c' for computer/'m' for me)")
+  choice = gets.chomp.downcase
+  unless TURN_CHOICES.values.flatten.include?(choice)
+    prompt("Wrong input. Please type again.(c/m)")
+    choice = gets.chomp.downcase
   end
 
   system('clear')
 
-  if choose.downcase == 'c'
-    updated_board[5] = 'O'
-    draw_board(updated_board)
-  end
+  board[5] = 'O' if TURN_CHOICES[:computer].include?(choice)
 
-  draw_board(updated_board)
+  draw_board(board)
 
   loop do
-    puts "Which square would you like to mark?" \
-    " #{joinor(empty_squares(updated_board), ',', 'and')}."
+    prompt("Which square would you like to mark?" \
+    " #{joinor(empty_squares(board), ',', 'and')}.")
     player_square = gets.chomp.to_i
 
-    if updated_board[player_square] != ' '
-      puts "please try again"
+    if board[player_square] != ' '
+      prompt("Wrong input. Please try again.")
       next
     end
 
     system('clear')
 
-    updated_board[player_square] = 'X'
-    if full_line?(updated_board, 'X')
-      draw_board(updated_board)
+    board[player_square] = 'X'
+    if full_line?(board, 'X')
+      draw_board(board)
       player_score += 1
-      puts "You won."
+      prompt("You won.")
       break
     end
 
-    if !smart_choice(updated_board, 'O')
-      if !smart_choice(updated_board, 'X')
-        computer_square = empty_squares(updated_board).include?(5) ?
-        5 : empty_squares(updated_board).sample
-      else
-        computer_square = smart_choice(updated_board, 'X') # defensive move
-      end
-    else
-      computer_square = smart_choice(updated_board, 'O') # offensive move
-    end
+    computer_square = if !winning_choice(board) && !defensive_choice(board)
+                        if empty_squares(board).include?(5)
+                          5
+                        else
+                          empty_squares(board).sample
+                        end
+                      elsif !!winning_choice(board)
+                        winning_choice(board)
+                      else
+                        defensive_choice(board)
+                      end
 
-    updated_board[computer_square] = 'O'
-    if full_line?(updated_board, 'O')
-      draw_board(updated_board)
+    board[computer_square] = 'O'
+    if full_line?(board, 'O')
+      draw_board(board)
       computer_score += 1
-      puts "Computer won."
+      prompt("Computer won.")
       break
     end
-    draw_board(updated_board)
+    draw_board(board)
 
-    if empty_squares(updated_board).size.zero?
-      puts "It's a tie"
+    if empty_squares(board).size.zero?
+      prompt("It's a tie")
       break
     end
   end
 
   puts "Your score : #{player_score}. Computer score : #{computer_score}"
   if computer_score == 3 && player_score == 3
-    puts "Very tense match ! No winner. "
+    prompt("Very tense match ! No winner. ")
     break
   elsif computer_score >= 3
-    puts "Game over. No one can beat the computer !"
+    prompt("Game over. No one can beat the computer !")
     break
   elsif player_score >= 3
-    puts "Congratulations ! You're the best, no doubt about it."
+    prompt("Congratulations ! You're the best, no doubt about it.")
     break
   end
 
-  puts "Do you want to play again ? (y/n)"
-  while (answer != 'y') || (answer != 'n')
-    answer = gets.chomp
-    if answer == 'n'
-      puts "Thanks for playing. Bye !"
+  puts "Do you want to play again ?"
+  while !GAME_CHOICES.include?(answer)
+    answer = gets.chomp.downcase
+    if GAME_CHOICES[:quit].include?(answer)
+      system('clear')
+      prompt("Thanks for playing. Bye !")
       break
-    elsif answer == 'y'
-      puts "All right !"
+    elsif GAME_CHOICES[:restart].include?(answer)
+      prompt("All right !")
       break
     else
-      puts "I don't understand. please type again.(y/n)"
+      prompt("I don't understand. Please type again.(yes/no)")
     end
   end
 
-  break if answer == 'n'
+  break if GAME_CHOICES[:quit].include?(answer)
 end
