@@ -32,26 +32,35 @@ def empty_squares(board)
   board.keys.select { |square| board[square] == ' ' }
 end
 
-def winning_choice(brd)
+def best_square(brd, marker)
   WINNING_LINES.values.each do |line|
     board_line = {}
     line.each { |square| board_line[square] = brd[square] }
-    if board_line.values.count('O') == 2 && board_line.values.count(' ') == 1
-      return board_line.key(' ') # pick the winning square
+    if board_line.values.count(marker) == 2 && board_line.values.count(' ') == 1
+      return board_line.key(' ')
     end
   end
   false
 end
 
+def winning_choice(brd)
+  best_square(brd, 'O')
+end
+
 def defensive_choice(brd)
-  WINNING_LINES.values.each do |line|
-    board_line = {}
-    line.each { |square| board_line[square] = brd[square] }
-    if board_line.values.count('X') == 2 && board_line.values.count(' ') == 1
-      return board_line.key(' ') # pick the defensive square
-    end
-  end
-  false
+  best_square(brd, 'X')
+end
+
+def center_square_move(board)
+  5 if empty_squares(board).include?(5)
+end
+
+def computer_moves(board)
+  square = winning_choice(board)
+  square = defensive_choice(board) unless square
+  square = center_square_move(board) unless square
+  square = empty_squares(board).sample unless square
+  board[square] = 'O'
 end
 
 def joinor(array, delimiter = ',', joining_word = 'or')
@@ -85,11 +94,12 @@ end
 
 puts "===================== Welcome to Tic Tac Toe ! =========================="
 
+player_score = 0
+computer_score = 0
+  
 loop do
   board = initialize_board
   answer = ''
-  player_score = 0
-  computer_score = 0
 
   prompt("Who should start to play ? ('c' for computer/'m' for me)")
   choice = gets.chomp.downcase
@@ -124,19 +134,7 @@ loop do
       break
     end
 
-    computer_square = if !winning_choice(board) && !defensive_choice(board)
-                        if empty_squares(board).include?(5)
-                          5
-                        else
-                          empty_squares(board).sample
-                        end
-                      elsif !!winning_choice(board)
-                        winning_choice(board)
-                      else
-                        defensive_choice(board)
-                      end
-
-    board[computer_square] = 'O'
+   computer_moves(board)
     if full_line?(board, 'O')
       draw_board(board)
       computer_score += 1
