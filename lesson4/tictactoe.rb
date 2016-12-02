@@ -31,7 +31,7 @@ end
 def empty_squares(board)
   board.keys.select { |square| board[square] == ' ' }
 end
-
+  
 def winning_choice(brd)
   WINNING_LINES.values.each do |line|
     board_line = {}
