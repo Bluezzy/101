@@ -23,9 +23,9 @@ end
 def card_value(card)
   value = card[1]
   if value == 'J' || value == 'Q' || value == 'K'
-    return 10
+    10
   else
-    return value.to_i
+    value.to_i
   end
 end
 
@@ -37,16 +37,16 @@ def hand_values(hand)
   hand_values
 end
 
-def joinand(array, last = array.last, delimiter = ',', joining_word = 'and')
+def joinand(array, last, delimiter = ',', joining_word = 'and')
   "#{array[0..-2].join(delimiter + ' ')} #{joining_word} #{last}"
 end
 
 def show_player_hand(hand)
-  puts "You have #{joinand(hand_values(hand))}"
+  puts "You have #{joinand(hand_values(hand), hand_values(hand).last)}"
 end
 
 def show_dealer_hand(hand)
-  puts "Dealer has #{joinand(hand_values(hand))}"
+  puts "Dealer has #{joinand(hand_values(hand), hand_values(hand).last)}"
 end
 
 def show_partial_hand(hand)
