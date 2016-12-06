@@ -1,4 +1,6 @@
 CHOICES = %w(h hit s stay).freeze
+HIT = CHOICES[0..1].freeze
+STAY = CHOICES[2..3].freeze
 
 def initialize_deck
   [['H', '2'], ['H', '3'], ['H', '4'], ['H', '5'], ['H', '6'],
@@ -132,6 +134,7 @@ end
 
 def display_results(your_hand, his_hand)
   if busted?(your_hand)
+    show_player_hand(your_hand)
     puts "You busted ! Dealer won."
   elsif busted?(his_hand)
     puts "Dealer busted ! You won"
@@ -167,6 +170,20 @@ def hit_or_stay?
   answer
 end
 
+def display_between_turns(your_hand, his_hand)
+  display_hidden_card(his_hand)
+  show_dealer_hand(his_hand)
+  show_player_hand(your_hand)
+end
+
+def player_turn(deck, your_hand, opponent_hand)
+  hit(deck, your_hand)
+  display_card(your_hand)
+  return if busted?(your_hand)
+  show_partial_hand(opponent_hand)
+  show_player_hand(your_hand)
+end
+
 player_score = 0
 dealer_score = 0
 
@@ -180,32 +197,19 @@ loop do
   game_deck = initialize_deck.shuffle
   prompt("Press ENTER to deal the cards")
   gets.chomp
-
   system('clear')
   start_game(game_deck, player_hand, dealer_hand)
 
   loop do
     choice = hit_or_stay?
     system('clear')
-    break if CHOICES[2..3].include?(choice) # s, stay
-
-    next unless CHOICES[0..1].include?(choice) # h, hit
-    hit(game_deck, player_hand)
-    display_card(player_hand)
-    break if busted?(player_hand)
-    show_partial_hand(dealer_hand)
-    show_player_hand(player_hand)
+    player_turn(game_deck, player_hand, dealer_hand) if HIT.include?(choice)
+    break if STAY.include?(choice) || busted?(player_hand)
   end
 
-  if busted?(player_hand)
-    show_player_hand(player_hand)
-  else
-    display_hidden_card(dealer_hand)
-    show_dealer_hand(dealer_hand)
-    show_player_hand(player_hand)
-
+  unless busted?(player_hand)
+    display_between_turns(player_hand, dealer_hand)
     dealer_turn(game_deck, dealer_hand)
-
   end
 
   display_results(player_hand, dealer_hand)
@@ -216,12 +220,12 @@ loop do
     dealer_score += 1
   end
 
-  puts "Your score : #{player_score}. \nDealer score : #{dealer_score}\n "
+  puts "Your score : #{player_score} \nDealer score : #{dealer_score}\n "
   break if player_score == 3 || dealer_score == 3
 end
 
 if player_score > dealer_score
-  prompt("Congratulations ! you won the overall game.")
+  puts "Well done ! You won the overall game. \nThanks for playing."
 else
-  prompt("Dealer won the overall game.")
+  puts "Oops.. Dealer won the overall game. \nThanks for playing. Bye !"
 end
