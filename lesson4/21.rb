@@ -1,10 +1,6 @@
-PERMANENT_VALUES = { '2' => 2, '3' => 3, '4' => 4, '5' => 5, '6' => 6,
-                     '7' => 7, '8' => 8, '9' => 9, '10' => 10,
-                     'J' => 10, 'Q' => 10, 'K' => 10 }.freeze
-
 CHOICES = %w(h hit s stay).freeze
 
-def initialize_desk
+def initialize_deck
   [['H', '2'], ['H', '3'], ['H', '4'], ['H', '5'], ['H', '6'],
    ['H', '7'], ['H', '8'], ['H', '9'], ['H', '10'], ['H', 'J'],
    ['H', 'Q'], ['H', 'K'], ['H', 'A'], ['D', '2'], ['D', '3'],
@@ -22,6 +18,15 @@ def prompt(message)
   puts "==>> #{message}"
 end
 
+def card_value(card)
+  value = card[1]
+  if value == 'J' || value == 'Q' || value == 'K'
+    return 10
+  else
+    return value.to_i
+  end
+end
+
 def hand_values(hand)
   hand_values = []
   hand.each do |card|
@@ -30,42 +35,37 @@ def hand_values(hand)
   hand_values
 end
 
+def joinand(array, last = array.last, delimiter = ',', joining_word = 'and')
+  "#{array[0..-2].join(delimiter + ' ')} #{joining_word} #{last}"
+end
+
 def show_player_hand(hand)
-  puts "You have #{hand_values(hand)[0..-2].join(', ')} and " \
-  "#{hand_values(hand).last}"
+  puts "You have #{joinand(hand_values(hand))}"
 end
 
 def show_dealer_hand(hand)
-  puts "Dealer has #{hand_values(hand)[0..-2].join(', ')} and " \
-  "#{hand_values(hand).last}"
+  puts "Dealer has #{joinand(hand_values(hand))}"
 end
 
 def show_partial_hand(hand)
-  hand_values = []
-  hand.each do |card|
-    hand_values << card[1]
-  end
-  puts "Dealer has #{hand_values[0..-2].join(', ')} and unknown card"
+  puts "Dealer has #{joinand(hand_values(hand), 'unknown card')}"
 end
 
-def hit(desk, hand)
-  card = desk.sample
+def hit(deck, hand)
+  card = deck.sample
   hand << card
-  desk.delete(card)
-  card
+  deck.pop
 end
 
-def deal(desk, hand1, hand2)
-  card1 = desk.sample
-  desk.delete(card1)
-  card2 = desk.sample
-  desk.delete(card2)
-  card3 = desk.sample
-  desk.delete(card3)
-  card4 = desk.sample
-  desk.delete(card4)
-  hand1 << card1 << card3
-  hand2 << card2 << card4
+def deal(deck, hand1, hand2)
+  2.times do
+    card1 = deck.sample
+    deck.delete(card1)
+    card2 = deck.sample
+    deck.delete(card2)
+    hand1 << card1
+    hand2 << card2
+  end
 end
 
 def count_aces(hand)
@@ -76,7 +76,7 @@ def partial_count(hand)
   total = 0
   hand.each do |card|
     next if card[1] == 'A'
-    total += PERMANENT_VALUES[card[1]]
+    total += card_value(card)
   end
   total
 end
@@ -102,31 +102,23 @@ def busted?(hand)
   total_count(hand) > 21
 end
 
-def see_card(hand)
+def display_card(hand)
   prompt("It's a #{hand.last[1]}")
 end
 
-def see_hidden_card(hand)
+def display_hidden_card(hand)
   prompt("Dealer's hidden card was a #{hand.last[1]} !")
 end
 
-def hit_ace(desk, hand) # for pry tests
-  ace = desk.select { |any_card| any_card[1] == 'A' }.sample
-  hand << ace
-  desk.delete(ace)
-end
-
-def dealer_turn(desk, hand)
+def dealer_turn(deck, hand)
   prompt("Dealer's turn...(press ENTER to continue)")
   gets.chomp
   while total_count(hand) < 17
     prompt('Dealer decides to hit!')
-    hit(desk, hand)
-    see_card(hand)
+    hit(deck, hand)
+    display_card(hand)
     show_dealer_hand(hand)
-    if busted?(hand)
-      return
-    end
+    return if busted?(hand)
     puts("Press ENTER to continue...")
     gets.chomp
   end
@@ -159,10 +151,20 @@ def won?(hand, opponent_hand)
   busted?(opponent_hand)) && !busted?(hand)
 end
 
-def start_game(desk, hand1, hand2)
-  deal(desk, hand1, hand2)
+def start_game(deck, hand1, hand2)
+  deal(deck, hand1, hand2)
   show_partial_hand(hand2)
   show_player_hand(hand1)
+end
+
+def hit_or_stay?
+  prompt("Would you like to hit or stay? (h/s)")
+  answer = gets.chomp.downcase
+  while !CHOICES.include?(answer)
+    prompt("Wrong input. Please type again. (h/s)")
+    answer = gets.chomp.downcase
+  end
+  answer
 end
 
 player_score = 0
@@ -175,28 +177,21 @@ prompt("Welcome to Twenty One game !")
 loop do
   player_hand = []
   dealer_hand = []
-  game_desk = initialize_desk
+  game_deck = initialize_deck.shuffle
   prompt("Press ENTER to deal the cards")
   gets.chomp
 
   system('clear')
-  start_game(game_desk, player_hand, dealer_hand)
+  start_game(game_deck, player_hand, dealer_hand)
 
   loop do
-    prompt("Would you like to hit or stay? (h/s)")
-    answer = gets.chomp.downcase
-    unless CHOICES.include?(answer)
-      prompt("Wrong input. Please type again. (h/s)")
-      answer = gets.chomp.downcase
-    end
-
+    choice = hit_or_stay?
     system('clear')
+    break if CHOICES[2..3].include?(choice) # s, stay
 
-    break if CHOICES[2..3].include?(answer) # s, stay
-
-    next unless CHOICES[0..1].include?(answer) # h, hit
-    hit(game_desk, player_hand)
-    see_card(player_hand)
+    next unless CHOICES[0..1].include?(choice) # h, hit
+    hit(game_deck, player_hand)
+    display_card(player_hand)
     break if busted?(player_hand)
     show_partial_hand(dealer_hand)
     show_player_hand(player_hand)
@@ -205,10 +200,12 @@ loop do
   if busted?(player_hand)
     show_player_hand(player_hand)
   else
-    see_hidden_card(dealer_hand)
+    display_hidden_card(dealer_hand)
     show_dealer_hand(dealer_hand)
     show_player_hand(player_hand)
-    dealer_turn(game_desk, dealer_hand)
+
+    dealer_turn(game_deck, dealer_hand)
+
   end
 
   display_results(player_hand, dealer_hand)
