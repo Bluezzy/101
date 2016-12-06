@@ -112,21 +112,6 @@ def display_hidden_card(hand)
   prompt("Dealer's hidden card was a #{hand.last[1]} !")
 end
 
-def dealer_turn(deck, hand)
-  prompt("Dealer's turn...(press ENTER to continue)")
-  gets.chomp
-  while total_count(hand) < 17
-    prompt('Dealer decides to hit!')
-    hit(deck, hand)
-    display_card(hand)
-    show_dealer_hand(hand)
-    return if busted?(hand)
-    puts("Press ENTER to continue...")
-    gets.chomp
-  end
-  prompt("Dealer decides to stay")
-end
-
 def display_totals(your_h, his_h)
   puts "Your total is : #{total_count(your_h)}."
   puts "Dealer's total is : #{total_count(his_h)}."
@@ -182,6 +167,21 @@ def player_turn(deck, your_hand, opponent_hand)
   return if busted?(your_hand)
   show_partial_hand(opponent_hand)
   show_player_hand(your_hand)
+end
+
+def dealer_turn(deck, hand)
+  prompt("Dealer's turn...(press ENTER to continue)")
+  gets.chomp
+  while total_count(hand) < 17
+    prompt('Dealer decides to hit!')
+    hit(deck, hand)
+    display_card(hand)
+    show_dealer_hand(hand)
+    return if busted?(hand)
+    puts("Press ENTER to continue...")
+    gets.chomp
+  end
+  prompt("Dealer decides to stay")
 end
 
 player_score = 0
