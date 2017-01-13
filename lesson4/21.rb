@@ -1,6 +1,7 @@
 CHOICES = %w(h hit s stay).freeze
 HIT = CHOICES[0..1].freeze
 STAY = CHOICES[2..3].freeze
+LIMIT = 21
 
 def initialize_deck
   [['H', '2'], ['H', '3'], ['H', '4'], ['H', '5'], ['H', '6'],
@@ -84,7 +85,7 @@ def partial_count(hand)
 end
 
 def ace_value(sum)
-  if sum <= 10
+  if sum < (LIMIT - 10)
     11
   else
     1
@@ -101,7 +102,7 @@ def total_count(hand)
 end
 
 def busted?(hand)
-  total_count(hand) > 21
+  total_count(hand) > LIMIT
 end
 
 def display_card(hand)
@@ -172,7 +173,7 @@ end
 def dealer_turn(deck, hand)
   prompt("Dealer's turn...(press ENTER to continue)")
   gets.chomp
-  while total_count(hand) < 17
+  while total_count(hand) < LIMIT - 4
     prompt('Dealer decides to hit!')
     hit(deck, hand)
     display_card(hand)
@@ -221,7 +222,7 @@ loop do
   end
 
   puts "Your score : #{player_score} \nDealer score : #{dealer_score}\n "
-  break if player_score == 3 || dealer_score == 3
+  break if player_score == 5 || dealer_score == 5
 end
 
 if player_score > dealer_score
