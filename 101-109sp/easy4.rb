@@ -161,3 +161,50 @@ puts short_long_short('abcde', 'fgh')
 puts short_long_short('', 'xyz')
 
 =end
+
+def size(number)
+	counter = 1
+	number_of_digits = 0 
+	loop do
+		counter *= 10
+		number_of_digits += 1 # number of digits is the same as the number of times we multiply by 10.
+		break if counter > number
+	end
+	number_of_digits
+end
+
+def get_digits(number)
+	if size(number) == 1 # Edge case
+		return [number]
+	end
+	counter = size(number) - 1
+	divisor = 10 ** counter
+	digits = []
+	remainer = number
+	loop do
+		digit = remainer / divisor
+		digits << digit
+		remainer -= (digit * divisor)
+		counter -= 1
+		divisor = divisor / 10
+		if counter <= 0
+			digits << remainer
+			break
+		end
+	end
+	digits
+end
+
+def number_to_string(number)
+	string_digits = { 
+	  1 => '1', 2 => '2', 3 => '3', 4 => '4', 5 => '5',
+	  6 => '6', 7 => '7', 8 => '8', 9 => 9, 0 => '0'
+	}
+	digits = get_digits(number)
+	result = digits.map do |digit|
+		digit = string_digits[digit]
+	end
+	result.join('')
+end
+
+p number_to_string(0)
