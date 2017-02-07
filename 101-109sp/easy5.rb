@@ -97,9 +97,6 @@ def before_midnight(string)
 	end
 end
 
-
-
-
 def time_of_day(number)
 	while number <= 0
 		number += 1440
@@ -123,3 +120,22 @@ def ascii_value(string)
 	end
 	result
 end
+
+def print_in_box(string)
+	corner_sign, horizontal_sign, vertical_sign = '+', '-', '|'
+	line_size = string.size + 4
+	lines = []
+	first_line = corner_sign + horizontal_sign*(line_size - 2) + corner_sign
+	last_line = first_line
+	between_line = vertical_sign + " "*(line_size - 2) + vertical_sign
+	empty_line = " "*line_size
+	message = vertical_sign + " " + string + " " + vertical_sign
+	lines << first_line << empty_line << between_line << empty_line <<  message << empty_line << between_line << empty_line << last_line
+	lines.each do |line|
+		puts line + "\n"
+	end
+end
+
+print_in_box("")
+	
+

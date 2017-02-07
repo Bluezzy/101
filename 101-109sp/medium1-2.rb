@@ -300,5 +300,5 @@ def sum_square_difference(n)
   sum_square(n) - square_sum(n)
 end
 
-#
+
 

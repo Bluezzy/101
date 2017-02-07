@@ -173,7 +173,14 @@ def size(number)
 	number_of_digits
 end
 
+def negative_to_positive(number)
+	number * - 1
+end
+
 def get_digits(number)
+	if number < 0
+		number = negative_to_positive(number)
+	end
 	if size(number) == 1 # Edge case
 		return [number]
 	end
@@ -196,6 +203,9 @@ def get_digits(number)
 end
 
 def number_to_string(number)
+	if number < 0
+		number = negative_to_positive(number)
+	end
 	string_digits = { 
 	  1 => '1', 2 => '2', 3 => '3', 4 => '4', 5 => '5',
 	  6 => '6', 7 => '7', 8 => '8', 9 => 9, 0 => '0'
@@ -207,4 +217,18 @@ def number_to_string(number)
 	result.join('')
 end
 
-p number_to_string(0)
+p number_to_string(-12)
+
+def signed_integer_to_string(number)
+	if number == 0
+		number_to_string(number)
+	elsif number > 0
+		number_to_string(number).prepend('+')
+	else
+		number_to_string(number).prepend('-')
+	end
+end
+
+p signed_integer_to_string(1235)
+p signed_integer_to_string(0)
+p signed_integer_to_string(-123)
