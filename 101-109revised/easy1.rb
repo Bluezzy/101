@@ -89,5 +89,6 @@ def calculate_bonus(salary, boolean)
   end
 end
 
-p calculate_bonus(2800, true)
-p calculate_bonus(3400, false)
+# p calculate_bonus(2800, true)
+# p calculate_bonus(3400, false)
+
