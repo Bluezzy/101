@@ -72,5 +72,16 @@ def triangle(n)
 	end
 end
 
-
+def find_fibonacci_location(length)
+	first = 1
+	second = 1
+	index = 2
+	loop do
+		index += 1
+		fibonacci = second + first
+		break if fibonacci.to_s.size >= length
+		second, first = fibonacci, second
+	end
+	index
+end
 
