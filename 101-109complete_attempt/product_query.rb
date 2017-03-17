@@ -1,20 +1,3 @@
-def balanced_parentheses?(string)
-  return false if (string.count("()") <= 0) || (string.count("(") != string.count(")"))
-  left_parentheses_counter = 0
-  right_parentheses_counter = 0
-  string.chars.each do |char|
-    return false if (right_parentheses_counter > left_parentheses_counter)
-    if char == "("
-      left_parentheses_counter += 1
-    elsif char == ")"
-      right_parentheses_counter += 1
-    else
-      next
-    end
-  end
-  true
-end
-
 PRODUCT = [
   {  name: "Thinkpad x210", price: 220 }, #0
   {  name: "Thinkpad x220", price: 250 }, #1
@@ -58,7 +41,5 @@ p search(query2)
 # [ { name: "Dell Inspiron", price: 300 },
 #   { name: "Dell Inspiron", price: 450 }]
 
-# search(query)
+p search(query)
 # [ {name: "Thinkpad x220", price: 250 } ]
-
-
